@@ -63,6 +63,22 @@ requirements:
       - libblas
 
 tests:
+  - if: win
+    then:
+      requirements:
+        run:
+          - ${{ compiler('cxx') }}
+          - cmake
+          - ninja
+          - python
+      files:
+        recipe:
+          - probe-consumer/
+      script:
+        - cmake -S probe-consumer -B consumer-build -G Ninja -DCMAKE_BUILD_TYPE=Release
+        - cmake --build consumer-build --verbose
+        - consumer-build\consumer.exe
+        - python probe-consumer/check_arch.py consumer-build/consumer.exe
   - script:
       - if: unix
         then:

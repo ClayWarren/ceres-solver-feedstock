@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.27)
+project(ceres_consumer CXX)
+find_package(Ceres REQUIRED)
+add_executable(consumer main.cc)
+target_link_libraries(consumer PRIVATE Ceres::ceres)

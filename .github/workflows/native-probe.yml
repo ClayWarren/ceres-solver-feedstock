@@ -1,0 +1,61 @@
+name: Ceres LGPL native Windows ARM64 validation
+on:
+  push:
+    branches: [codex/ceres-arm64-probe]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  probe:
+    if: github.repository == 'ClayWarren/ceres-solver-feedstock'
+    runs-on: windows-11-arm
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Fetch verified native prerequisites
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force C:/ceres-prereqs/win-arm64 | Out-Null
+          gh run download 34720943467 -R ClayWarren/gflags-feedstock -n gflags-arm64-package -D C:/downloads/gflags
+          if ($LASTEXITCODE -ne 0) { throw 'Artifact download failed' }
+          $files = @(Get-ChildItem C:/downloads/gflags -Recurse -Filter 'gflags-2.3.1-hf7d560f_1.conda')
+          if ($files.Count -ne 1) { throw 'Expected exactly one gflags package' }
+          if ((Get-FileHash $files[0].FullName -Algorithm SHA256).Hash.ToLower() -ne '77c159bcc584cadf1dc8c84fb7578a1e9569b8ed15fa603aa27ec5849f41ee8a') { throw 'gflags hash mismatch' }
+          Copy-Item $files[0].FullName C:/ceres-prereqs/win-arm64/
+          gh run download 34722470662 -R ClayWarren/glog-feedstock -n glog-arm64-package -D C:/downloads/glog
+          if ($LASTEXITCODE -ne 0) { throw 'Artifact download failed' }
+          $files = @(Get-ChildItem C:/downloads/glog -Recurse -Filter 'glog-0.7.1-hfa0989e_2.conda')
+          if ($files.Count -ne 1) { throw 'Expected exactly one glog package' }
+          if ((Get-FileHash $files[0].FullName -Algorithm SHA256).Hash.ToLower() -ne 'a32286b8e15c581472bc39bfa1b97479b75ea24e171f852abeb8b050b3f3c490') { throw 'glog hash mismatch' }
+          Copy-Item $files[0].FullName C:/ceres-prereqs/win-arm64/
+          gh run download 34724923588 -R ClayWarren/metis-feedstock -n metis-win-arm64-package -D C:/downloads/metis
+          if ($LASTEXITCODE -ne 0) { throw 'Artifact download failed' }
+          $files = @(Get-ChildItem C:/downloads/metis -Recurse -Filter 'metis-5.1.0-h9775365_1008.conda')
+          if ($files.Count -ne 1) { throw 'Expected exactly one metis package' }
+          if ((Get-FileHash $files[0].FullName -Algorithm SHA256).Hash.ToLower() -ne 'aa07351549d8acf5f884e63e0f0cc44ddfa333925b1d999745e37b364c4f078e') { throw 'metis hash mismatch' }
+          Copy-Item $files[0].FullName C:/ceres-prereqs/win-arm64/
+      - name: Build all outputs and test installed consumer
+        shell: cmd
+        env:
+          BUILD_PLATFORM: win-arm64
+          HOST_PLATFORM: win-arm64
+          CI: github_actions
+          CONDA_BLD_PATH: C:\bld
+          CONFIG: win_arm64_dep_license_familylgpl
+          MINIFORGE_HOME: C:\Miniforge
+          UPLOAD_PACKAGES: 'False'
+          EXTRA_CB_OPTIONS: '-m recipe/probe-channels.yaml --output-dir C:/bld'
+        run: |
+          set "flow_run_id=github_%GITHUB_RUN_ID%"
+          set "remote_url=https://github.com/%GITHUB_REPOSITORY%"
+          set "sha=%GITHUB_SHA%"
+          call ".scripts\run_win_build.bat"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ceres-lgpl-win-arm64-package
+          path: C:\bld\win-arm64\*.conda
+          if-no-files-found: warn
