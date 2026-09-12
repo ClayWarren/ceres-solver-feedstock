@@ -1,11 +1,7 @@
 c_compiler:
-- gcc
-c_compiler_version:
-- '15'
+- vs2022
 c_stdlib:
-- sysroot
-c_stdlib_version:
-- '2.17'
+- vs
 channel_sources:
 - conda-forge
 channel_targets:
@@ -13,13 +9,9 @@ channel_targets:
 cuda_compiler_version:
 - None
 cxx_compiler:
-- gxx
-cxx_compiler_version:
-- '15'
+- vs2022
 dep_license_family:
 - lgpl
-docker_image:
-- quay.io/condaforge/linux-anvil-x86_64:alma10
 eigen_abi_devel:
 - 5.0.1
 glog:
@@ -33,9 +25,4 @@ metis:
 suitesparse:
 - '7'
 target_platform:
-- linux-ppc64le
-zip_keys:
-- - c_compiler_version
-  - cxx_compiler_version
-  - c_stdlib_version
-  - cuda_compiler_version
+- win-arm64
