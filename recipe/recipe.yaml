@@ -67,6 +67,7 @@ tests:
     then:
       requirements:
         run:
+          - ${{ compiler('c') }}
           - ${{ compiler('cxx') }}
           - cmake
           - ninja
