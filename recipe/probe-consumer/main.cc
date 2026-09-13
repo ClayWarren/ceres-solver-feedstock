@@ -11,7 +11,8 @@ int main() {
   ceres::Problem problem;
   problem.AddResidualBlock(new ceres::AutoDiffCostFunction<Residual, 1, 1>(new Residual), nullptr, &x);
   ceres::Solver::Options options;
-  options.linear_solver_type = ceres::DENSE_QR;
+  options.linear_solver_type = ceres::SPARSE_NORMAL_CHOLESKY;
+  options.sparse_linear_algebra_library_type = ceres::SUITE_SPARSE;
   ceres::Solver::Summary summary;
   ceres::Solve(options, &problem, &summary);
   std::cout << summary.BriefReport() << " x=" << x << std::endl;

@@ -1,4 +1,4 @@
-name: Ceres LGPL native Windows ARM64 validation
+name: Ceres GPL native Windows ARM64 validation
 on:
   push:
     branches: [codex/ceres-arm64-probe]
@@ -37,6 +37,45 @@ jobs:
           if ($files.Count -ne 1) { throw 'Expected exactly one metis package' }
           if ((Get-FileHash $files[0].FullName -Algorithm SHA256).Hash.ToLower() -ne 'aa07351549d8acf5f884e63e0f0cc44ddfa333925b1d999745e37b364c4f078e') { throw 'metis hash mismatch' }
           Copy-Item $files[0].FullName C:/ceres-prereqs/win-arm64/
+          gh run download 34424750772 -R ClayWarren/gmp-feedstock -n gmp-win-arm64 -D C:/downloads/gmp
+          if ($LASTEXITCODE -ne 0) { throw 'Artifact download failed' }
+          $files = @(Get-ChildItem C:/downloads/gmp -Recurse -Filter 'gmp-6.3.0-h2fa7ca5_3.conda')
+          if ($files.Count -ne 1) { throw 'Expected exactly one gmp package' }
+          if ((Get-FileHash $files[0].FullName -Algorithm SHA256).Hash.ToLower() -ne 'df6a25e19c496bf571e6fe34abcb147591fa8b92a10921e889af402d2cb3f7b6') { throw 'gmp hash mismatch' }
+          Copy-Item $files[0].FullName C:/ceres-prereqs/win-arm64/
+          gh run download 34429108300 -R ClayWarren/mpfr-feedstock -n mpfr-win-arm64 -D C:/downloads/mpfr
+          if ($LASTEXITCODE -ne 0) { throw 'Artifact download failed' }
+          $files = @(Get-ChildItem C:/downloads/mpfr -Recurse -Filter 'mpfr-4.2.2-h52c769d_2.conda')
+          if ($files.Count -ne 1) { throw 'Expected exactly one mpfr package' }
+          if ((Get-FileHash $files[0].FullName -Algorithm SHA256).Hash.ToLower() -ne '682037858929fe458e53f988f4aa9b7fe7ad90adde623db466f4cdbbd2ac3abf') { throw 'mpfr hash mismatch' }
+          Copy-Item $files[0].FullName C:/ceres-prereqs/win-arm64/
+          gh run download 34725959115 -R ClayWarren/suitesparse-feedstock -n suitesparse-win-arm64-packages -D C:/downloads/suitesparse
+          if ($LASTEXITCODE -ne 0) { throw 'SuiteSparse download failed' }
+          $expected = @{
+            'libklu-2.3.5-h450927a_7100103.conda' = 'a93721d9eee6e78da733175e17adc8961be2c1e06d445c95d1e7b5ac9f1f0580'
+            'libcolamd-3.3.4-hb5a14a5_7100103.conda' = '37933aa9285905ed54ba71040199c126febd21d0c69ded34b038f05123a69028'
+            'libparu-1.0.0-hbd658bb_7100103.conda' = '74cb38062b25f10d5dbd0a2dc34c9e06000e504d0c858336b4163100fce6a4f6'
+            'suitesparse-mongoose-3.3.4-h850c4a0_7100103.conda' = '16f588a0024bdc7effab9ab82a01abf939b287be7bb1ae391a68cec7f9d99df8'
+            'libcamd-3.3.3-hb5a14a5_7100103.conda' = '7166dde63733be66a58c506ded01cb47314d14f8150fea04f113d5b4cf9e738c'
+            'libcxsparse-4.4.1-hb5a14a5_7100103.conda' = '2aa69bdbd06b69ade3f004a9c3183bed545b7f6121a3fd324655817bf79fbcde'
+            'libcholmod-5.3.1-h7534fb9_7100103.conda' = '85261faef8105b8272dbbc69887e1448cfb74410a6b74bc6f6fad8731a2f4b0d'
+            'suitesparse-7.10.1-hb85fe0e_7100103.conda' = 'ec8c44b66d4798cf479e43bc327abaa38952b1cc414c406a68d1e119fb7fd9ea'
+            'libbtf-2.3.2-hb5a14a5_7100103.conda' = '85c64181b3c3a74f416da8ccb5d09f9b192d13c1bf55e8d0ba3f5e6e056d7909'
+            'libamd-3.3.3-h8b75b08_7100103.conda' = '6bc1e4eedaf7388b2c23215b2200f72190c30d7def57e57197683d31642f4403'
+            'libsuitesparseconfig-7.10.1-he22b748_7100103.conda' = 'bd31dbfb3acac323fc10f9eb756929f41ff52fe01207f6bd37edb8a4deac36de'
+            'libumfpack-6.3.5-h6f9f3e6_7100103.conda' = '1199858aaa09369277d7dcb4153b5e7a9dc0998418d17e6af3421f86ca9ba0ba'
+            'librbio-4.3.4-hb5a14a5_7100103.conda' = 'e103a793c4167dc10fc7813855a49ba62776cbb664ad99dea92fc00e8c5d1fea'
+            'libspex-3.2.3-h1b3f184_7100103.conda' = '4d70675722038de668aaf4427d91848cf1b12462c813c791c656d6c97263a2bf'
+            'libspqr-4.3.4-h6aa13fb_7100103.conda' = '773b3bdb94ba2741b4ed35c27e3172ab860abdcb2e67f38d7031c708fbe277c3'
+            'libccolamd-3.3.4-hb5a14a5_7100103.conda' = 'dc2ecd76d9e93fbe8e7b0aa0ff8da5ccf02e255b09c09ac319927f96ea043733'
+            'libldl-3.3.2-hb5a14a5_7100103.conda' = '486bc7ec49d1fb4de2dfec832635a16b58693c5aac3259809ee91d8dfc477078'
+          }
+          foreach ($name in $expected.Keys) {
+            $files = @(Get-ChildItem C:/downloads/suitesparse -Recurse -Filter $name)
+            if ($files.Count -ne 1) { throw "Missing SuiteSparse package: $name" }
+            if ((Get-FileHash $files[0].FullName -Algorithm SHA256).Hash.ToLower() -ne $expected[$name]) { throw "Hash mismatch: $name" }
+            Copy-Item $files[0].FullName C:/ceres-prereqs/win-arm64/
+          }
       - name: Build all outputs and test installed consumer
         shell: cmd
         env:
@@ -44,7 +83,7 @@ jobs:
           HOST_PLATFORM: win-arm64
           CI: github_actions
           CONDA_BLD_PATH: C:\bld
-          CONFIG: win_arm64_dep_license_familylgpl
+          CONFIG: win_arm64_dep_license_familygpl
           MINIFORGE_HOME: C:\Miniforge
           UPLOAD_PACKAGES: 'False'
           EXTRA_CB_OPTIONS: '-m recipe/probe-channels.yaml --output-dir C:/bld'
@@ -56,6 +95,6 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
-          name: ceres-lgpl-win-arm64-package
+          name: ceres-gpl-win-arm64-package
           path: C:\bld\win-arm64\*.conda
           if-no-files-found: warn
